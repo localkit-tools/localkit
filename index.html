@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LocalKit - Private Browser Tools</title>
+
+    <meta name="description" content="LocalKit provides simple privacy and developer tools that work directly in your browser.">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <div class="logo">LocalKit</div>
+
+    <p>Useful tools. Your data stays local.</p>
+
+    <nav class="main-nav">
+        <a href="#home">Home</a>
+        <a href="#developer-tools">Developer Tools</a>
+        <a href="#privacy-tools">Privacy Tools</a>
+    </nav>
+</header>
+
+
+<main>
+
+    <!-- HERO SECTION -->
+
+    <section class="hero">
+
+        <h1>Private Tools for Everyone</h1>
+
+        <p>
+            Simple developer and privacy tools that work directly in your browser.
+        </p>
+
+    </section>
+
+
+    <!-- PRIVACY SECTION -->
+
+    <section class="privacy-section">
+
+        <h2>🔐 Your Data Stays Local</h2>
+
+    <p>
+    LocalKit processes your data locally in your browser whenever possible,
+    helping reduce unnecessary data transfer.
+</p>
+            
+
+    </section>
+
+
+    <!-- WHY LOCALKIT -->
+
+    <section class="why-section">
+
+        <h2>Why Use LocalKit?</h2>
+
+        <div class="why-grid">
+
+            <div>
+                <h3>🔒 Privacy First</h3>
+                <p>
+                    Your data stays in your browser whenever possible.
+                </p>
+            </div>
+
+            <div>
+                <h3>⚡ Fast & Simple</h3>
+                <p>
+                    No complicated setup. Just open a tool and use it.
+                </p>
+            </div>
+
+            <div>
+                <h3>🌐 No Account Needed</h3>
+                <p>
+                    Use the tools without creating an account.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+<!-- HOW LOCALKIT WORKS -->
+
+<section class="how-section">
+
+    <h2>⚡ How LocalKit Works</h2>
+
+    <div class="how-grid">
+
+        <div>
+            <div class="how-number">1</div>
+            <h3>Choose a Tool</h3>
+            <p>
+                Select the browser tool you need.
+            </p>
+        </div>
+
+        <div>
+            <div class="how-number">2</div>
+            <h3>Process Your Data</h3>
+            <p>
+                Your data is processed directly in your browser whenever possible.
+            </p>
+        </div>
+
+        <div>
+            <div class="how-number">3</div>
+            <h3>Get Your Result</h3>
+            <p>
+                Use, copy, or download your result instantly.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- TRUST & PRIVACY -->
+
+<section class="trust-section">
+
+    <h2>🔒 Built With Privacy in Mind</h2>
+
+    <div class="trust-grid">
+
+        <div>
+            <h3>💻 Browser-Based</h3>
+            <p>
+                Tools run directly in your web browser whenever possible.
+            </p>
+        </div>
+
+        <div>
+            <h3>🚫 No Account Required</h3>
+            <p>
+                You can use LocalKit tools without creating an account.
+            </p>
+        </div>
+
+        <div>
+            <h3>🛡️ Less Data Sharing</h3>
+            <p>
+                Local processing helps reduce unnecessary data transfer.
+            </p>
+        </div>
+
+    </div>
+
+    <p class="trust-note">
+        LocalKit is designed to process data locally whenever possible.
+        Always avoid entering highly sensitive information into any online tool.
+    </p>
+
+</section>
+
+<!-- COMING SOON -->
+
+<section class="coming-section">
+
+    <h2>🚀 More Tools Coming Soon</h2>
+
+    <p>
+        LocalKit is growing. More useful privacy and developer tools will be added.
+    </p>
+
+    <div class="coming-tags">
+
+        <span>📄 PDF Tools</span>
+        <span>🔐 File Hash</span>
+        <span>🔗 QR Generator</span>
+        <span>🧹 Text Cleaner</span>
+        <span>📊 Data Tools</span>
+
+    </div>
+
+</section>
+    <!-- TOOL SEARCH -->
+
+    <div class="tool-search">
+
+        <input
+            type="text"
+            id="toolSearch"
+            placeholder="🔎 Search a tool..."
+            onkeyup="searchTools()"
+        >
+
+        <button
+            type="button"
+            onclick="clearToolSearch()">
+            ✕ Clear
+        </button>
+
+    </div>
+
+
+    <!-- TOOLS -->
+
+    <section class="tools">
+
+
+        <!-- TOOLS HEADING -->
+
+        <div class="tools-heading">
+
+            <h2>🛠️ Privacy & Developer Tools</h2>
+
+            <p>
+                Simple browser-based tools designed to keep your data on your device.
+            </p>
+
+            <span class="tool-count">
+                10 tools available
+            </span>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- DEVELOPER TOOLS -->
+        <!-- ================================= -->
+
+        <h3 id="developer-tools" class="category-heading">
+    🛠️ Developer Tools
+</h3>
+
+
+        <!-- 1. JSON FORMATTER -->
+
+        <div class="tool-card">
+
+            <h2>JSON Formatter</h2>
+
+            <p>
+                Format and validate JSON easily.
+            </p>
+
+            <textarea
+                id="jsonInput"
+                placeholder="Paste JSON here..."></textarea>
+
+            <button onclick="formatJSON()">
+                Format JSON
+            </button>
+
+            <button onclick="clearJSON()">
+                Clear
+            </button>
+
+            <pre id="jsonOutput"></pre>
+
+            <button onclick="copyJSON()">
+                Copy JSON
+            </button>
+
+        </div>
+
+
+        <!-- 2. JWT DECODER -->
+
+        <div class="tool-card">
+
+            <h2>JWT Decoder</h2>
+
+            <p>
+                Decode JWT information directly in your browser.
+            </p>
+
+            <textarea
+                id="jwtInput"
+                placeholder="Paste JWT here..."></textarea>
+
+            <button onclick="decodeJWT()">
+                Decode JWT
+            </button>
+
+            <button onclick="clearJWT()">
+                Clear
+            </button>
+
+            <pre id="jwtOutput"></pre>
+
+            <button onclick="copyJWT()">
+                Copy JWT Output
+            </button>
+
+        </div>
+
+
+        <!-- 3. BASE64 -->
+
+        <div class="tool-card">
+
+            <h2>Base64 Encoder / Decoder</h2>
+
+            <p>
+                Encode or decode Base64 text directly in your browser.
+            </p>
+
+            <textarea
+                id="base64Input"
+                placeholder="Enter text here..."></textarea>
+
+            <button onclick="encodeBase64()">
+                Encode
+            </button>
+
+            <button onclick="decodeBase64()">
+                Decode
+            </button>
+
+            <button onclick="clearBase64()">
+                Clear
+            </button>
+
+            <pre id="base64Output"></pre>
+
+            <button onclick="copyBase64()">
+                Copy
+            </button>
+
+        </div>
+
+
+        <!-- 4. URL ENCODER -->
+
+        <div class="tool-card">
+
+            <h2>URL Encoder / Decoder</h2>
+
+            <p>
+                Encode or decode URLs directly in your browser.
+            </p>
+
+            <textarea
+                id="urlInput"
+                placeholder="Enter URL or text here..."></textarea>
+
+            <button onclick="encodeURL()">
+                Encode URL
+            </button>
+
+            <button onclick="decodeURL()">
+                Decode URL
+            </button>
+
+            <button onclick="clearURL()">
+                Clear
+            </button>
+
+            <pre id="urlOutput"></pre>
+
+            <button onclick="copyURL()">
+                Copy
+            </button>
+
+        </div>
+
+
+        <!-- 5. TIMESTAMP CONVERTER -->
+
+        <div class="tool-card">
+
+            <h2>Timestamp Converter</h2>
+
+            <p>
+                Convert Unix timestamps to readable dates.
+            </p>
+
+            <input
+                type="number"
+                id="timestampInput"
+                placeholder="Enter Unix timestamp">
+
+            <button onclick="convertTimestamp()">
+                Convert
+            </button>
+
+            <button onclick="clearTimestamp()">
+                Clear
+            </button>
+
+            <pre id="timestampOutput"></pre>
+
+            <button onclick="copyTimestamp()">
+                Copy
+            </button>
+
+        </div>
+
+
+        <!-- 6. REGEX TESTER -->
+
+        <div class="tool-card">
+
+            <h2>Regex Tester</h2>
+
+            <p>
+                Test regular expressions directly in your browser.
+            </p>
+
+            <input
+                type="text"
+                id="regexInput"
+                placeholder="Enter regex, e.g. [A-Z]+">
+
+            <textarea
+                id="regexText"
+                placeholder="Enter text to test..."></textarea>
+
+            <button onclick="testRegex()">
+                Test Regex
+            </button>
+
+            <button onclick="clearRegex()">
+                Clear
+            </button>
+
+            <pre id="regexOutput"></pre>
+
+            <button onclick="copyRegex()">
+                Copy Results
+            </button>
+
+        </div>
+
+
+        <!-- 7. SHA-256 -->
+
+        <div class="tool-card">
+
+            <h2>SHA-256 Hash Generator</h2>
+
+            <p>
+                Generate a SHA-256 hash from text directly in your browser.
+            </p>
+
+            <textarea
+                id="hashInput"
+                placeholder="Enter text here..."></textarea>
+
+            <button onclick="generateHash()">
+                Generate Hash
+            </button>
+
+            <button onclick="clearHash()">
+                Clear
+            </button>
+
+            <pre id="hashOutput"></pre>
+
+            <button onclick="copyHash()">
+                Copy Hash
+            </button>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- PRIVACY & SECURITY TOOLS -->
+        <!-- ================================= -->
+
+       <h3 id="privacy-tools" class="category-heading">
+    🔐 Privacy & Security Tools
+</h3>
+
+
+        <!-- 8. METADATA CLEANER -->
+
+        <div class="tool-card">
+
+            <h2>Metadata Cleaner</h2>
+
+            <p>
+                Re-encode images to help remove embedded metadata.
+            </p>
+
+            <input
+                type="file"
+                id="imageInput"
+                accept="image/*">
+
+            <button onclick="cleanImageMetadata()">
+                Clean Image
+            </button>
+            <button onclick="clearMetadata()">
+    Clear
+</button>
+
+            <div id="metadataOutput"></div>
+
+        </div>
+
+
+        <!-- 9. PASSWORD GENERATOR -->
+
+        <div class="tool-card">
+
+            <h2>Password Generator</h2>
+
+            <p>
+                Generate a strong random password directly in your browser.
+            </p>
+
+            <label for="passwordLength">
+                Password Length:
+            </label>
+
+            <input
+                type="number"
+                id="passwordLength"
+                value="16"
+                min="8"
+                max="64">
+
+            <button onclick="generatePassword()">
+                Generate Password
+            </button>
+
+            <button onclick="clearPassword()">
+                Clear
+            </button>
+
+            <pre id="passwordOutput"></pre>
+
+            <button onclick="copyPassword()">
+                Copy Password
+            </button>
+
+        </div>
+
+
+        <!-- 10. PASSWORD STRENGTH CHECKER -->
+
+        <div class="tool-card">
+
+            <h2>Password Strength Checker</h2>
+
+            <p>
+                Check the strength of a password directly in your browser.
+            </p>
+
+            <input
+                type="password"
+                id="strengthPassword"
+                placeholder="Enter password">
+
+            <button onclick="checkPasswordStrength()">
+                Check Strength
+            </button>
+
+            <button onclick="clearPasswordStrength()">
+                Clear
+            </button>
+
+            <pre id="strengthOutput"></pre>
+
+        </div>
+
+
+    </section>
+
+<main id="home">
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <p>
+        LocalKit — Privacy-first browser tools
+    </p>
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
