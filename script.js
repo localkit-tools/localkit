@@ -349,11 +349,12 @@ function encodeURL() {
 
     try {
         output.textContent = encodeURIComponent(input);
+        output.className = "success";
     } catch (error) {
         output.textContent = "Unable to encode text.";
+        output.className = "error";
     }
 }
-
 
 function decodeURL() {
     const input = document.getElementById("urlInput").value;
@@ -361,11 +362,12 @@ function decodeURL() {
 
     try {
         output.textContent = decodeURIComponent(input);
+        output.className = "success";
     } catch (error) {
-        output.textContent = "Invalid encoded URL.";
+        output.textContent = "Invalid encoded URL. Please check your input.";
+        output.className = "error";
     }
 }
-
 
 function clearURL() {
     document.getElementById("urlInput").value = "";
@@ -388,28 +390,37 @@ async function copyURL() {
    TIMESTAMP CONVERTER
 ========================= */
 
-function convertTimestamp() {
-    const input =
-        document.getElementById("timestampInput").value;
 
-    const output =
-        document.getElementById("timestampOutput");
+
+    function convertTimestamp() {
+    const input = document.getElementById("timestampInput").value.trim();
+    const output = document.getElementById("timestampOutput");
 
     if (input === "") {
-        output.textContent = "Please enter a timestamp.";
+        output.textContent = "Please enter a timestamp in seconds.";
+        output.className = "error";
         return;
     }
 
-    const date = new Date(Number(input) * 1000);
+    const seconds = Number(input);
 
-    if (isNaN(date.getTime())) {
-        output.textContent = "Invalid timestamp.";
+    if (!Number.isFinite(seconds)) {
+        output.textContent = "Please enter a valid numeric timestamp.";
+        output.className = "error";
+        return;
+    }
+
+    const date = new Date(seconds * 1000);
+
+    if (Number.isNaN(date.getTime())) {
+        output.textContent = "Timestamp is outside the supported date range.";
+        output.className = "error";
         return;
     }
 
     output.textContent = date.toLocaleString();
+    output.className = "success";
 }
-
 
 function clearTimestamp() {
     document.getElementById("timestampInput").value = "";
@@ -432,40 +443,36 @@ async function copyTimestamp() {
    REGEX TESTER
 ========================= */
 
+
 function testRegex() {
-    const pattern =
-        document.getElementById("regexInput").value;
-
-    const text =
-        document.getElementById("regexText").value;
-
-    const output =
-        document.getElementById("regexOutput");
+    const pattern = document.getElementById("regexInput").value;
+    const text = document.getElementById("regexText").value;
+    const output = document.getElementById("regexOutput");
 
     if (pattern === "") {
-        output.textContent =
-            "Please enter a regular expression.";
+        output.textContent = "Please enter a regular expression.";
+        output.className = "error";
         return;
     }
 
     try {
         const regex = new RegExp(pattern, "g");
-
         const matches = text.match(regex);
 
-        if (matches) {
+        if (matches && matches.length > 0) {
             output.textContent =
                 "Matches found:\n" + matches.join("\n");
+            output.className = "success";
         } else {
             output.textContent = "No matches found.";
+            output.className = "error";
         }
-
     } catch (error) {
         output.textContent =
-            "Invalid regular expression.";
+            "Invalid regular expression. Please check your pattern.";
+        output.className = "error";
     }
 }
-
 
 function clearRegex() {
     document.getElementById("regexInput").value = "";
@@ -532,34 +539,39 @@ function clearPasswordStrength() {
    SHA-256 HASH GENERATOR
 ========================= */
 
-async function generateHash() {
-    const input =
-        document.getElementById("hashInput").value;
 
-    const output =
-        document.getElementById("hashOutput");
+async function generateHash() {
+    const input = document.getElementById("hashInput").value;
+    const output = document.getElementById("hashOutput");
 
     if (input === "") {
         output.textContent = "Please enter some text.";
+        output.className = "error";
         return;
     }
 
-    const data = new TextEncoder().encode(input);
+    if (!globalThis.crypto || !globalThis.crypto.subtle) {
+        output.textContent =
+            "SHA-256 is unavailable in this browser context. Use a supported secure context.";
+        output.className = "error";
+        return;
+    }
 
-    const hashBuffer =
-        await crypto.subtle.digest("SHA-256", data);
+    try {
+        const data = new TextEncoder().encode(input);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 
-    const hashArray =
-        Array.from(new Uint8Array(hashBuffer));
-
-    const hashHex =
-        hashArray
+        const hashHex = Array.from(new Uint8Array(hashBuffer))
             .map(byte => byte.toString(16).padStart(2, "0"))
             .join("");
 
-    output.textContent = hashHex;
+        output.textContent = hashHex;
+        output.className = "success";
+    } catch (error) {
+        output.textContent = "Unable to generate the SHA-256 hash.";
+        output.className = "error";
+    }
 }
-
 
 function clearHash() {
     document.getElementById("hashInput").value = "";
