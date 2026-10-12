@@ -277,31 +277,49 @@ function clearPassword() {
    BASE64 ENCODER / DECODER
 ========================= */
 
+
 function encodeBase64() {
     const input = document.getElementById("base64Input").value;
     const output = document.getElementById("base64Output");
 
     try {
-        output.textContent =
-            btoa(unescape(encodeURIComponent(input)));
+        const bytes = new TextEncoder().encode(input);
+        let binary = "";
+
+        bytes.forEach(byte => {
+            binary += String.fromCharCode(byte);
+        });
+
+        output.textContent = btoa(binary);
+        output.className = "success";
     } catch (error) {
         output.textContent = "Unable to encode text.";
+        output.className = "error";
     }
 }
 
 
 function decodeBase64() {
-    const input = document.getElementById("base64Input").value;
+    const input = document.getElementById("base64Input").value.trim();
     const output = document.getElementById("base64Output");
 
     try {
-        output.textContent =
-            decodeURIComponent(escape(atob(input)));
+        const binary = atob(input);
+        const bytes = Uint8Array.from(
+            binary,
+            character => character.charCodeAt(0)
+        );
+
+        output.textContent = new TextDecoder("utf-8", {
+            fatal: true
+        }).decode(bytes);
+
+        output.className = "success";
     } catch (error) {
         output.textContent = "Invalid Base64 text.";
+        output.className = "error";
     }
 }
-
 
 function clearBase64() {
     document.getElementById("base64Input").value = "";
