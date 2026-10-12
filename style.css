@@ -687,3 +687,52 @@ footer p {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
 }
+/* LocalKit — Final polish */
+
+html {
+    scroll-behavior: smooth;
+}
+
+button,
+.tool-card a {
+    transition:
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #818cf8;
+    outline-offset: 3px;
+}
+
+.tool-card {
+    height: 100%;
+}
+
+.tool-card button {
+    min-height: 42px;
+}
+
+#metadataOutput a:hover {
+    background: #047857;
+    transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
