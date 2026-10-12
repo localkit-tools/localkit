@@ -189,25 +189,44 @@ function generatePassword() {
     const characters =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
-    let password = "";
-
-    const length = parseInt(
+    const length = Number(
         document.getElementById("passwordLength").value
     );
 
-    const randomValues = new Uint32Array(length);
+    const output =
+        document.getElementById("passwordOutput");
 
-    crypto.getRandomValues(randomValues);
-
-    for (let i = 0; i < length; i++) {
-        const randomIndex = randomValues[i] % characters.length;
-        password += characters[randomIndex];
+    if (!Number.isInteger(length) || length < 8 || length > 64) {
+        output.textContent =
+            "Choose a password length between 8 and 64.";
+        return;
     }
 
-    document.getElementById("passwordOutput").textContent = password;
+    let password = "";
+
+    const range = 2 ** 32;
+    const limit =
+        Math.floor(range / characters.length) * characters.length;
+
+    while (password.length < length) {
+        const remaining = length - password.length;
+
+        const values =
+            new Uint32Array(Math.max(16, remaining));
+
+        crypto.getRandomValues(values);
+
+        for (const value of values) {
+            if (value >= limit) continue;
+
+            password += characters[value % characters.length];
+
+            if (password.length === length) break;
+        }
+    }
+
+    output.textContent = password;
 }
-
-
 function copyPassword() {
     const password =
         document.getElementById("passwordOutput").textContent;
