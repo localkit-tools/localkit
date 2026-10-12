@@ -270,6 +270,11 @@
             <button onclick="decodeJWT()">Decode JWT</button>
             <button onclick="clearJWT()">Clear</button>
 
+          <p class="privacy-note">
+    Security note: Decoding a JWT does not verify its signature.
+    Do not enter sensitive tokens into tools you do not trust.
+</p>
+            
             <pre id="jwtOutput"></pre>
 
             <button onclick="copyJWT()">Copy JWT Output</button>
