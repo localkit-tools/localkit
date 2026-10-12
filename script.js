@@ -45,6 +45,8 @@ async function copyJSON() {
    JWT DECODER
 ========================= */
 
+
+
 function decodeJWT() {
     const input = document.getElementById("jwtInput").value.trim();
     const output = document.getElementById("jwtOutput");
@@ -52,23 +54,31 @@ function decodeJWT() {
     try {
         const parts = input.split(".");
 
-        if (parts.length !== 3) {
-            throw new Error("A JWT must contain 3 parts.");
+        if (parts.length !== 3 || parts.some(part => part === "")) {
+            throw new Error("A JWT must contain 3 non-empty parts.");
         }
 
-        const header = JSON.parse(
-            atob(parts[0].replace(/-/g, "+").replace(/_/g, "/"))
-        );
+        function decodeBase64URL(part) {
+            const base64 = part
+                .replace(/-/g, "+")
+                .replace(/_/g, "/");
 
-        const payload = JSON.parse(
-            atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
-        );
+            const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+            const binary = atob(padded);
+
+            const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+            return new TextDecoder().decode(bytes);
+        }
+
+        const header = JSON.parse(decodeBase64URL(parts[0]));
+        const payload = JSON.parse(decodeBase64URL(parts[1]));
 
         output.textContent =
             "HEADER:\n" +
             JSON.stringify(header, null, 4) +
             "\n\nPAYLOAD:\n" +
-            JSON.stringify(payload, null, 4);
+            JSON.stringify(payload, null, 4) +
+            "\n\nSecurity note: The signature has NOT been verified.";
 
         output.className = "success";
 
@@ -77,7 +87,6 @@ function decodeJWT() {
         output.className = "error";
     }
 }
-
 
 function clearJWT() {
     document.getElementById("jwtInput").value = "";
