@@ -1,342 +1,339 @@
+"use strict";
+
+/* =========================
+   SHARED HELPERS
+========================= */
+
 async function copyText(text) {
     try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            throw new Error("Clipboard unavailable");
+        }
+
         await navigator.clipboard.writeText(text);
         alert("Copied successfully!");
         return true;
-    } catch (error) {
+    } catch {
         alert("Copy failed. Please select and copy the text manually.");
         return false;
     }
 }
 
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+function setOutput(id, message, type = "") {
+    const output = getElement(id);
+    if (!output) return;
+
+    output.textContent = message;
+    output.className = type;
+}
+
+async function copyOutput(id, emptyMessage) {
+    const output = getElement(id);
+    const text = output?.textContent ?? "";
+
+    if (!text.trim()) {
+        alert(emptyMessage);
+        return;
+    }
+
+    await copyText(text);
+}
+
+/* =========================
+   JSON FORMATTER
+========================= */
+
 function formatJSON() {
-    const input = document.getElementById("jsonInput").value;
-    const output = document.getElementById("jsonOutput");
+    const input = getElement("jsonInput").value;
+    const output = getElement("jsonOutput");
 
     try {
-        const parsed = JSON.parse(input);
-        output.textContent = JSON.stringify(parsed, null, 4);
+        output.textContent = JSON.stringify(JSON.parse(input), null, 4);
         output.className = "success";
-    } catch (error) {
-        output.textContent = "Invalid JSON: " + error.message;
+    } catch {
+        output.textContent = "Invalid JSON. Check your input and try again.";
         output.className = "error";
     }
 }
 
-
 function clearJSON() {
-    document.getElementById("jsonInput").value = "";
-    document.getElementById("jsonOutput").textContent = "";
+    getElement("jsonInput").value = "";
+    setOutput("jsonOutput", "");
 }
 
-
-async function copyJSON() {
-    const output = document.getElementById("jsonOutput").textContent;
-
-    if (output === "") {
-        alert("Please format JSON first.");
-        return;
-    }
-
-    await copyText(output);
+function copyJSON() {
+    return copyOutput("jsonOutput", "Please format JSON first.");
 }
 
 /* =========================
    JWT DECODER
 ========================= */
 
-
-
 function decodeJWT() {
-    const input = document.getElementById("jwtInput").value.trim();
-    const output = document.getElementById("jwtOutput");
+    const input = getElement("jwtInput").value.trim();
+    const output = getElement("jwtOutput");
 
     try {
         const parts = input.split(".");
 
-        if (parts.length !== 3 || parts.some(part => part === "")) {
-            throw new Error("A JWT must contain 3 non-empty parts.");
+        if (parts.length !== 3 || parts.some(part => !part)) {
+            throw new Error("A JWT must contain three non-empty parts.");
         }
 
         function decodeBase64URL(part) {
+            if (!/^[A-Za-z0-9_-]+$/.test(part)) {
+                throw new Error("Invalid Base64URL characters.");
+            }
+
             const base64 = part
                 .replace(/-/g, "+")
                 .replace(/_/g, "/");
 
             const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
             const binary = atob(padded);
+            const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
 
-            const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
-            return new TextDecoder().decode(bytes);
+            return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
         }
 
         const header = JSON.parse(decodeBase64URL(parts[0]));
         const payload = JSON.parse(decodeBase64URL(parts[1]));
 
         output.textContent =
-            "HEADER:\n" +
-            JSON.stringify(header, null, 4) +
-            "\n\nPAYLOAD:\n" +
-            JSON.stringify(payload, null, 4) +
-            "\n\nSecurity note: The signature has NOT been verified.";
+            "HEADER:\n" + JSON.stringify(header, null, 4) +
+            "\n\nPAYLOAD:\n" + JSON.stringify(payload, null, 4) +
+            "\n\nWARNING: The signature has NOT been verified.";
 
         output.className = "success";
-
-    } catch (error) {
-        output.textContent = "Invalid JWT: " + error.message;
+    } catch {
+        output.textContent = "Invalid JWT. Check the token format and contents.";
         output.className = "error";
     }
 }
 
 function clearJWT() {
-    document.getElementById("jwtInput").value = "";
-    document.getElementById("jwtOutput").textContent = "";
+    getElement("jwtInput").value = "";
+    setOutput("jwtOutput", "");
 }
 
-
-async function copyJWT() {
-    const output = document.getElementById("jwtOutput").textContent;
-
-    if (output === "") {
-        alert("Please decode a JWT first.");
-        return;
-    }
-
-    await copyText(output);
+function copyJWT() {
+    return copyOutput("jwtOutput", "Please decode a JWT first.");
 }
-let cleanedImageURL = null;
 
 /* =========================
-   METADATA CLEANER
+   IMAGE METADATA CLEANER
 ========================= */
 
-function cleanImageMetadata() {
-    const fileInput = document.getElementById("imageInput");
-    const output = document.getElementById("metadataOutput");
+let cleanedImageURL = null;
+let imageProcessingToken = 0;
 
-    if (!fileInput || !output) {
-        return;
+function clearMetadata() {
+    imageProcessingToken++;
+
+    const fileInput = getElement("imageInput");
+    if (fileInput) fileInput.value = "";
+
+    const output = getElement("metadataOutput");
+    if (output) output.replaceChildren();
+
+    if (cleanedImageURL) {
+        URL.revokeObjectURL(cleanedImageURL);
+        cleanedImageURL = null;
     }
+}
 
-    if (fileInput.files.length === 0) {
+async function cleanImageMetadata() {
+    const fileInput = getElement("imageInput");
+    const output = getElement("metadataOutput");
+
+    if (!fileInput || !output) return;
+
+    const file = fileInput.files?.[0];
+
+    if (!file) {
         output.textContent = "Please select an image first.";
         return;
     }
 
-    const file = fileInput.files[0];
+    if (!file.type.startsWith("image/")) {
+        output.textContent = "Please select an image file.";
+        return;
+    }
 
-    const image = new Image();
+    // Avoid processing unexpectedly large files in the browser.
+    if (file.size > 15 * 1024 * 1024) {
+        output.textContent = "Please choose an image smaller than 15 MB.";
+        return;
+    }
 
-    const imageURL = URL.createObjectURL(file);
+    const token = ++imageProcessingToken;
+    output.textContent = "Processing image...";
 
-    image.onload = function () {
+    const sourceURL = URL.createObjectURL(file);
+
+    try {
+        const image = new Image();
+
+        await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error("Image could not be read."));
+            image.src = sourceURL;
+        });
+
+        if (token !== imageProcessingToken) return;
+
+        if (!image.naturalWidth || !image.naturalHeight ||
+            image.naturalWidth * image.naturalHeight > 40000000) {
+            throw new Error("Image dimensions are too large to process safely.");
+        }
 
         const canvas = document.createElement("canvas");
-
-        canvas.width = image.width;
-        canvas.height = image.height;
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
 
         const context = canvas.getContext("2d");
-
-        if (!context) {
-            output.textContent = "Unable to process this image.";
-            URL.revokeObjectURL(imageURL);
-            return;
-        }
+        if (!context) throw new Error("Canvas processing is unavailable.");
 
         context.drawImage(image, 0, 0);
 
-        canvas.toBlob(function (blob) {
+        const blob = await new Promise(resolve =>
+            canvas.toBlob(resolve, "image/png")
+        );
 
-            URL.revokeObjectURL(imageURL);
+        if (token !== imageProcessingToken) return;
+        if (!blob) throw new Error("The cleaned image could not be created.");
 
-            if (!blob) {
-                output.textContent = "Unable to clean this image.";
-                return;
-            }
+        if (cleanedImageURL) URL.revokeObjectURL(cleanedImageURL);
+        cleanedImageURL = URL.createObjectURL(blob);
 
-            if (cleanedImageURL) {
-    URL.revokeObjectURL(cleanedImageURL);
-}
+        const link = document.createElement("a");
+        link.href = cleanedImageURL;
+        link.download = "cleaned-image.png";
+        link.textContent = "Download Cleaned Image";
 
-cleanedImageURL = URL.createObjectURL(blob);
-
-const cleanedURL = cleanedImageURL;
-
-            const link = document.createElement("a");
-
-            link.href = cleanedURL;
-            link.download = "cleaned-image.png";
-            link.textContent = "Download Cleaned Image";
-
-            output.innerHTML = "";
-            output.appendChild(link);
-
-            /*
-             * Clear the selected file from the file input
-             * after the cleaned image has been created.
-             */
-            fileInput.value = "";
-
-        }, "image/png");
-    };
-
-    image.onerror = function () {
-        URL.revokeObjectURL(imageURL);
-        output.textContent = "Unable to read this image.";
-    };
-
-    image.src = imageURL;
-}
-
-
-function clearMetadata() {
-    const fileInput = document.getElementById("imageInput");
-    const output = document.getElementById("metadataOutput");
-
-    if (fileInput) {
+        output.replaceChildren(link);
         fileInput.value = "";
+    } catch (error) {
+        if (token === imageProcessingToken) {
+            output.textContent = error.message ||
+                "Unable to process this image. Try another file.";
+        }
+    } finally {
+        URL.revokeObjectURL(sourceURL);
     }
-
-   if (output) {
-    output.innerHTML = "";
 }
-
-if (cleanedImageURL) {
-    URL.revokeObjectURL(cleanedImageURL);
-    cleanedImageURL = null;
-}
-}
-
 
 /* =========================
    PASSWORD GENERATOR
 ========================= */
 
 function generatePassword() {
+    const output = getElement("passwordOutput");
+    const length = Number(getElement("passwordLength").value);
+
     const characters =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
-    const length = Number(
-        document.getElementById("passwordLength").value
-    );
-
-    const output =
-        document.getElementById("passwordOutput");
-
     if (!Number.isInteger(length) || length < 8 || length > 64) {
-        output.textContent =
-            "Choose a password length between 8 and 64.";
+        output.textContent = "Choose a password length between 8 and 64.";
+        output.className = "error";
+        return;
+    }
+
+    if (!globalThis.crypto?.getRandomValues) {
+        output.textContent = "Secure password generation is unavailable in this browser.";
+        output.className = "error";
         return;
     }
 
     let password = "";
-
     const range = 2 ** 32;
-    const limit =
-        Math.floor(range / characters.length) * characters.length;
+    const limit = Math.floor(range / characters.length) * characters.length;
 
     while (password.length < length) {
-        const remaining = length - password.length;
-
-        const values =
-            new Uint32Array(Math.max(16, remaining));
-
+        const values = new Uint32Array(Math.max(16, length - password.length));
         crypto.getRandomValues(values);
 
         for (const value of values) {
             if (value >= limit) continue;
 
             password += characters[value % characters.length];
-
             if (password.length === length) break;
         }
     }
 
     output.textContent = password;
+    output.className = "success";
 }
-async function copyPassword() {
-    const password =
-        document.getElementById("passwordOutput").textContent;
 
-    if (password === "") {
-        alert("Please generate a password first.");
-        return;
-    }
-
-    await copyText(password);
+function copyPassword() {
+    return copyOutput("passwordOutput", "Please generate a password first.");
 }
 
 function clearPassword() {
-    document.getElementById("passwordLength").value = 16;
-    document.getElementById("passwordOutput").textContent = "";
+    getElement("passwordLength").value = 16;
+    setOutput("passwordOutput", "");
 }
-
 
 /* =========================
    BASE64 ENCODER / DECODER
 ========================= */
 
-
 function encodeBase64() {
-    const input = document.getElementById("base64Input").value;
-    const output = document.getElementById("base64Output");
+    const input = getElement("base64Input").value;
+    const output = getElement("base64Output");
 
     try {
         const bytes = new TextEncoder().encode(input);
         let binary = "";
 
-        bytes.forEach(byte => {
+        for (const byte of bytes) {
             binary += String.fromCharCode(byte);
-        });
+        }
 
         output.textContent = btoa(binary);
         output.className = "success";
-    } catch (error) {
-        output.textContent = "Unable to encode text.";
+    } catch {
+        output.textContent = "Unable to encode this text.";
         output.className = "error";
     }
 }
 
-
 function decodeBase64() {
-    const input = document.getElementById("base64Input").value.trim();
-    const output = document.getElementById("base64Output");
+    const input = getElement("base64Input").value.trim();
+    const output = getElement("base64Output");
 
     try {
+        if (!input || input.length % 4 !== 0 ||
+            !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(input)) {
+            throw new Error("Invalid Base64");
+        }
+
         const binary = atob(input);
-        const bytes = Uint8Array.from(
-            binary,
-            character => character.charCodeAt(0)
-        );
+        const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
 
         output.textContent = new TextDecoder("utf-8", {
             fatal: true
         }).decode(bytes);
 
         output.className = "success";
-    } catch (error) {
-        output.textContent = "Invalid Base64 text.";
+    } catch {
+        output.textContent = "Invalid Base64 text or unsupported character encoding.";
         output.className = "error";
     }
 }
 
 function clearBase64() {
-    document.getElementById("base64Input").value = "";
-    document.getElementById("base64Output").textContent = "";
+    getElement("base64Input").value = "";
+    setOutput("base64Output", "");
 }
 
-
-async function copyBase64() {
-    const output =
-        document.getElementById("base64Output").textContent;
-
-    if (output === "") {
-        alert("Please encode or decode something first.");
-        return;
-    }
-
-    await copyText(output);
+function copyBase64() {
+    return copyOutput("base64Output", "Please encode or decode something first.");
 }
 
 /* =========================
@@ -344,76 +341,51 @@ async function copyBase64() {
 ========================= */
 
 function encodeURL() {
-    const input = document.getElementById("urlInput").value;
-    const output = document.getElementById("urlOutput");
-
-    try {
-        output.textContent = encodeURIComponent(input);
-        output.className = "success";
-    } catch (error) {
-        output.textContent = "Unable to encode text.";
-        output.className = "error";
-    }
+    const input = getElement("urlInput").value;
+    setOutput("urlOutput", encodeURIComponent(input), "success");
 }
 
 function decodeURL() {
-    const input = document.getElementById("urlInput").value;
-    const output = document.getElementById("urlOutput");
+    const input = getElement("urlInput").value;
+    const output = getElement("urlOutput");
 
     try {
         output.textContent = decodeURIComponent(input);
         output.className = "success";
-    } catch (error) {
-        output.textContent = "Invalid encoded URL. Please check your input.";
+    } catch {
+        output.textContent = "Invalid encoded text. Please check your input.";
         output.className = "error";
     }
 }
 
 function clearURL() {
-    document.getElementById("urlInput").value = "";
-    document.getElementById("urlOutput").textContent = "";
+    getElement("urlInput").value = "";
+    setOutput("urlOutput", "");
 }
 
-
-async function copyURL() {
-    const output =
-        document.getElementById("urlOutput").textContent;
-
-    if (output === "") {
-        alert("Please encode or decode something first.");
-        return;
-    }
-
-    await copyText(output);
+function copyURL() {
+    return copyOutput("urlOutput", "Please encode or decode something first.");
 }
+
 /* =========================
    TIMESTAMP CONVERTER
 ========================= */
 
+function convertTimestamp() {
+    const input = getElement("timestampInput").value.trim();
+    const output = getElement("timestampOutput");
 
-
-    function convertTimestamp() {
-    const input = document.getElementById("timestampInput").value.trim();
-    const output = document.getElementById("timestampOutput");
-
-    if (input === "") {
-        output.textContent = "Please enter a timestamp in seconds.";
+    if (!input) {
+        output.textContent = "Please enter a Unix timestamp in seconds.";
         output.className = "error";
         return;
     }
 
     const seconds = Number(input);
-
-    if (!Number.isFinite(seconds)) {
-        output.textContent = "Please enter a valid numeric timestamp.";
-        output.className = "error";
-        return;
-    }
-
     const date = new Date(seconds * 1000);
 
-    if (Number.isNaN(date.getTime())) {
-        output.textContent = "Timestamp is outside the supported date range.";
+    if (!Number.isFinite(seconds) || !Number.isFinite(date.getTime())) {
+        output.textContent = "Please enter a valid timestamp within the supported date range.";
         output.className = "error";
         return;
     }
@@ -423,34 +395,33 @@ async function copyURL() {
 }
 
 function clearTimestamp() {
-    document.getElementById("timestampInput").value = "";
-    document.getElementById("timestampOutput").textContent = "";
+    getElement("timestampInput").value = "";
+    setOutput("timestampOutput", "");
 }
 
-
-async function copyTimestamp() {
-    const output =
-        document.getElementById("timestampOutput").textContent;
-
-    if (output === "") {
-        alert("Please convert a timestamp first.");
-        return;
-    }
-
-    await copyText(output);
+function copyTimestamp() {
+    return copyOutput("timestampOutput", "Please convert a timestamp first.");
 }
+
 /* =========================
    REGEX TESTER
 ========================= */
 
-
 function testRegex() {
-    const pattern = document.getElementById("regexInput").value;
-    const text = document.getElementById("regexText").value;
-    const output = document.getElementById("regexOutput");
+    const pattern = getElement("regexInput").value;
+    const text = getElement("regexText").value;
+    const output = getElement("regexOutput");
 
-    if (pattern === "") {
+    if (!pattern) {
         output.textContent = "Please enter a regular expression.";
+        output.className = "error";
+        return;
+    }
+
+    // Limits reduce accidental oversized input but cannot eliminate
+    // every risk of a slow regular expression.
+    if (pattern.length > 200 || text.length > 20000) {
+        output.textContent = "Please use a pattern under 201 characters and text under 20,001 characters.";
         output.className = "error";
         return;
     }
@@ -459,54 +430,40 @@ function testRegex() {
         const regex = new RegExp(pattern, "g");
         const matches = text.match(regex);
 
-        if (matches && matches.length > 0) {
-            output.textContent =
-                "Matches found:\n" + matches.join("\n");
+        if (matches?.length) {
+            output.textContent = "Matches found:\n" + matches.join("\n");
             output.className = "success";
         } else {
             output.textContent = "No matches found.";
             output.className = "error";
         }
-    } catch (error) {
-        output.textContent =
-            "Invalid regular expression. Please check your pattern.";
+    } catch {
+        output.textContent = "Invalid regular expression. Please check your pattern.";
         output.className = "error";
     }
 }
 
 function clearRegex() {
-    document.getElementById("regexInput").value = "";
-    document.getElementById("regexText").value = "";
-    document.getElementById("regexOutput").textContent = "";
+    getElement("regexInput").value = "";
+    getElement("regexText").value = "";
+    setOutput("regexOutput", "");
 }
 
-
-async function copyRegex() {
-    const output =
-        document.getElementById("regexOutput").textContent;
-
-    if (output === "") {
-        alert("Please test a regular expression first.");
-        return;
-    }
-
-    await copyText(output);
+function copyRegex() {
+    return copyOutput("regexOutput", "Please test a regular expression first.");
 }
-
 
 /* =========================
    PASSWORD STRENGTH CHECKER
 ========================= */
 
 function checkPasswordStrength() {
-    const password =
-        document.getElementById("strengthPassword").value;
+    const password = getElement("strengthPassword").value;
+    const output = getElement("strengthOutput");
 
-    const output =
-        document.getElementById("strengthOutput");
-
-    if (password === "") {
-        output.textContent = "Please enter a password.";
+    if (!password) {
+        output.textContent = "Please enter a sample password.";
+        output.className = "error";
         return;
     }
 
@@ -519,40 +476,38 @@ function checkPasswordStrength() {
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 2) {
-        output.textContent = "Strength: Weak";
-    } else if (score <= 4) {
-        output.textContent = "Strength: Medium";
-    } else {
-        output.textContent = "Strength: Strong";
-    }
-}
+    let strength;
+    if (score <= 2) strength = "Weak";
+    else if (score <= 4) strength = "Medium";
+    else strength = "Strong";
 
+    output.textContent =
+        "Estimated strength: " + strength +
+        "\nThis is a basic estimate, not a guarantee of security.";
+    output.className = score <= 2 ? "error" : "success";
+}
 
 function clearPasswordStrength() {
-    document.getElementById("strengthPassword").value = "";
-    document.getElementById("strengthOutput").textContent = "";
+    getElement("strengthPassword").value = "";
+    setOutput("strengthOutput", "");
 }
-
 
 /* =========================
    SHA-256 HASH GENERATOR
 ========================= */
 
-
 async function generateHash() {
-    const input = document.getElementById("hashInput").value;
-    const output = document.getElementById("hashOutput");
+    const input = getElement("hashInput").value;
+    const output = getElement("hashOutput");
 
-    if (input === "") {
+    if (!input) {
         output.textContent = "Please enter some text.";
         output.className = "error";
         return;
     }
 
-    if (!globalThis.crypto || !globalThis.crypto.subtle) {
-        output.textContent =
-            "SHA-256 is unavailable in this browser context. Use a supported secure context.";
+    if (!globalThis.crypto?.subtle) {
+        output.textContent = "SHA-256 is unavailable in this browser context.";
         output.className = "error";
         return;
     }
@@ -561,34 +516,24 @@ async function generateHash() {
         const data = new TextEncoder().encode(input);
         const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 
-        const hashHex = Array.from(new Uint8Array(hashBuffer))
+        output.textContent = Array.from(new Uint8Array(hashBuffer))
             .map(byte => byte.toString(16).padStart(2, "0"))
             .join("");
 
-        output.textContent = hashHex;
         output.className = "success";
-    } catch (error) {
+    } catch {
         output.textContent = "Unable to generate the SHA-256 hash.";
         output.className = "error";
     }
 }
 
 function clearHash() {
-    document.getElementById("hashInput").value = "";
-    document.getElementById("hashOutput").textContent = "";
+    getElement("hashInput").value = "";
+    setOutput("hashOutput", "");
 }
 
-
-async function copyHash() {
-    const output =
-        document.getElementById("hashOutput").textContent;
-
-    if (output === "") {
-        alert("Please generate a hash first.");
-        return;
-    }
-
-    await copyText(output);
+function copyHash() {
+    return copyOutput("hashOutput", "Please generate a hash first.");
 }
 
 /* =========================
@@ -596,33 +541,19 @@ async function copyHash() {
 ========================= */
 
 function searchTools() {
-    const searchText =
-        document.getElementById("toolSearch").value.toLowerCase();
+    const searchText = getElement("toolSearch").value.trim().toLowerCase();
 
-    const tools =
-        document.querySelectorAll(".tool-card");
-
-    tools.forEach(function(tool) {
-
-        const toolText =
-            tool.textContent.toLowerCase();
-
-        if (toolText.includes(searchText)) {
-            tool.style.display = "";
-        } else {
-            tool.style.display = "none";
-        }
+    document.querySelectorAll(".tool-card").forEach(tool => {
+        tool.style.display = tool.textContent.toLowerCase().includes(searchText)
+            ? ""
+            : "none";
     });
 }
 
-
 function clearToolSearch() {
-    document.getElementById("toolSearch").value = "";
+    getElement("toolSearch").value = "";
 
-    const tools =
-        document.querySelectorAll(".tool-card");
-
-    tools.forEach(function(tool) {
+    document.querySelectorAll(".tool-card").forEach(tool => {
         tool.style.display = "";
     });
 }
