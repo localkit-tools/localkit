@@ -95,7 +95,7 @@ async function copyJWT() {
 
     await copyText(output);
 }
-
+let cleanedImageURL = null;
 
 /* =========================
    METADATA CLEANER
@@ -146,7 +146,13 @@ function cleanImageMetadata() {
                 return;
             }
 
-            const cleanedURL = URL.createObjectURL(blob);
+            if (cleanedImageURL) {
+    URL.revokeObjectURL(cleanedImageURL);
+}
+
+cleanedImageURL = URL.createObjectURL(blob);
+
+const cleanedURL = cleanedImageURL;
 
             const link = document.createElement("a");
 
@@ -183,9 +189,14 @@ function clearMetadata() {
         fileInput.value = "";
     }
 
-    if (output) {
-        output.innerHTML = "";
-    }
+   if (output) {
+    output.innerHTML = "";
+}
+
+if (cleanedImageURL) {
+    URL.revokeObjectURL(cleanedImageURL);
+    cleanedImageURL = null;
+}
 }
 
 
