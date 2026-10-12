@@ -1,3 +1,14 @@
+async function copyText(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert("Copied successfully!");
+        return true;
+    } catch (error) {
+        alert("Copy failed. Please select and copy the text manually.");
+        return false;
+    }
+}
+
 function formatJSON() {
     const input = document.getElementById("jsonInput").value;
     const output = document.getElementById("jsonOutput");
@@ -19,7 +30,7 @@ function clearJSON() {
 }
 
 
-function copyJSON() {
+async function copyJSON() {
     const output = document.getElementById("jsonOutput").textContent;
 
     if (output === "") {
@@ -27,10 +38,8 @@ function copyJSON() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("JSON copied!");
+    await copyText(output);
 }
-
 
 /* =========================
    JWT DECODER
@@ -76,7 +85,7 @@ function clearJWT() {
 }
 
 
-function copyJWT() {
+async function copyJWT() {
     const output = document.getElementById("jwtOutput").textContent;
 
     if (output === "") {
@@ -84,8 +93,7 @@ function copyJWT() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("JWT output copied!");
+    await copyText(output);
 }
 
 
@@ -227,7 +235,7 @@ function generatePassword() {
 
     output.textContent = password;
 }
-function copyPassword() {
+async function copyPassword() {
     const password =
         document.getElementById("passwordOutput").textContent;
 
@@ -236,10 +244,8 @@ function copyPassword() {
         return;
     }
 
-    navigator.clipboard.writeText(password);
-    alert("Password copied!");
+    await copyText(password);
 }
-
 
 function clearPassword() {
     document.getElementById("passwordLength").value = 16;
@@ -283,7 +289,7 @@ function clearBase64() {
 }
 
 
-function copyBase64() {
+async function copyBase64() {
     const output =
         document.getElementById("base64Output").textContent;
 
@@ -292,10 +298,8 @@ function copyBase64() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("Base64 output copied!");
+    await copyText(output);
 }
-
 
 /* =========================
    URL ENCODER / DECODER
@@ -331,7 +335,7 @@ function clearURL() {
 }
 
 
-function copyURL() {
+async function copyURL() {
     const output =
         document.getElementById("urlOutput").textContent;
 
@@ -340,11 +344,8 @@ function copyURL() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("URL output copied!");
+    await copyText(output);
 }
-
-
 /* =========================
    TIMESTAMP CONVERTER
 ========================= */
@@ -378,7 +379,7 @@ function clearTimestamp() {
 }
 
 
-function copyTimestamp() {
+async function copyTimestamp() {
     const output =
         document.getElementById("timestampOutput").textContent;
 
@@ -387,11 +388,8 @@ function copyTimestamp() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("Timestamp copied!");
+    await copyText(output);
 }
-
-
 /* =========================
    REGEX TESTER
 ========================= */
@@ -438,7 +436,7 @@ function clearRegex() {
 }
 
 
-function copyRegex() {
+async function copyRegex() {
     const output =
         document.getElementById("regexOutput").textContent;
 
@@ -447,8 +445,7 @@ function copyRegex() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("Regex results copied!");
+    await copyText(output);
 }
 
 
@@ -532,7 +529,7 @@ function clearHash() {
 }
 
 
-function copyHash() {
+async function copyHash() {
     const output =
         document.getElementById("hashOutput").textContent;
 
@@ -541,10 +538,8 @@ function copyHash() {
         return;
     }
 
-    navigator.clipboard.writeText(output);
-    alert("SHA-256 hash copied!");
+    await copyText(output);
 }
-
 
 /* =========================
    TOOL SEARCH
