@@ -17,12 +17,14 @@ Features
 
 Privacy
 
-LocalKit is designed to process tool inputs in the browser wherever possible. The website's hosting provider and browser may still process technical information.
+LocalKit is designed to process data directly in your browser whenever possible.
 
-- Avoid entering sensitive or confidential information.
-- JWT decoding does not verify a token's signature.
-- The password-strength checker provides only a basic estimate.
-- Image re-encoding may remove some metadata, but it does not guarantee removal of every metadata field.
+- The tools are built with HTML, CSS, JavaScript, and browser APIs.
+- Avoid entering sensitive information, real passwords, or private authentication tokens into online tools.
+- Image metadata removal depends on the image format and the processing method.
+- Your browser, device, and hosting provider may still process technical information when you visit the website.
+
+LocalKit is an ongoing learning project. Please verify results before relying on them for important work.
 
 Technology
 
