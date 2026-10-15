@@ -540,20 +540,41 @@ function copyHash() {
    TOOL SEARCH
 ========================= */
 
-function searchTools() {
-    const searchText = getElement("toolSearch").value.trim().toLowerCase();
 
-    document.querySelectorAll(".tool-card").forEach(tool => {
-        tool.style.display = tool.textContent.toLowerCase().includes(searchText)
-            ? ""
-            : "none";
+function searchTools() {
+    const searchInput = getElement("toolSearch");
+    if (!searchInput) return;
+
+    const searchText = searchInput.value.trim().toLowerCase();
+
+    document.querySelectorAll(".tools").forEach(section => {
+        section.querySelectorAll(".tool-card").forEach(tool => {
+            const matches = tool.textContent.toLowerCase().includes(searchText);
+            tool.hidden = !matches;
+        });
+
+        section.querySelectorAll(".category-heading").forEach(heading => {
+            let next = heading.nextElementSibling;
+            let hasVisibleTool = false;
+
+            while (next && !next.classList.contains("category-heading")) {
+                if (next.classList.contains("tool-card") && !next.hidden) {
+                    hasVisibleTool = true;
+                    break;
+                }
+                next = next.nextElementSibling;
+            }
+
+            heading.hidden = searchText !== "" && !hasVisibleTool;
+        });
     });
 }
 
 function clearToolSearch() {
-    getElement("toolSearch").value = "";
+    const searchInput = getElement("toolSearch");
+    if (searchInput) searchInput.value = "";
 
-    document.querySelectorAll(".tool-card").forEach(tool => {
-        tool.style.display = "";
+    document.querySelectorAll(".tool-card, .category-heading").forEach(element => {
+        element.hidden = false;
     });
 }
