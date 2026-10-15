@@ -726,3 +726,128 @@ textarea:focus-visible {
     }
 }
 
+/* LocalKit responsive and accessibility improvements */
+
+.category-heading {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 18px 0 0;
+    color: #312e81;
+    font-size: 24px;
+    line-height: 1.4;
+}
+
+.about-section,
+.privacy-policy-section,
+.contact-section {
+    max-width: 900px;
+    margin: 35px auto;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+    scroll-margin-top: 20px;
+}
+
+.about-section h2,
+.privacy-policy-section h2,
+.contact-section h2 {
+    margin-bottom: 16px;
+    color: #312e81;
+}
+
+.about-section h3,
+.privacy-policy-section h3 {
+    margin: 20px 0 8px;
+    color: #4338ca;
+}
+
+.about-section p,
+.privacy-policy-section p,
+.contact-section p {
+    margin-bottom: 14px;
+    color: #475569;
+    overflow-wrap: anywhere;
+}
+
+.about-section p:last-child,
+.privacy-policy-section p:last-child,
+.contact-section p:last-child {
+    margin-bottom: 0;
+}
+
+.about-section a,
+.privacy-policy-section a,
+.contact-section a,
+.footer-links a {
+    overflow-wrap: anywhere;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin: 16px 0;
+}
+
+.footer-links a {
+    color: #c7d2fe;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.footer-note {
+    margin-top: 12px;
+    color: #cbd5e1;
+}
+
+.tool-card pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .main-nav {
+        gap: 8px;
+    }
+
+    .main-nav a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .about-section,
+    .privacy-policy-section,
+    .contact-section {
+        padding: 22px 18px;
+        margin: 25px auto;
+    }
+
+    .category-heading {
+        font-size: 21px;
+    }
+
+    .tools {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tool-card {
+        min-width: 0;
+    }
+
+    .tool-card button {
+        max-width: 100%;
+    }
+
+    footer {
+        overflow-wrap: anywhere;
+    }
+}
+
