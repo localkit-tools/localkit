@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://localkit-8vr.pages.dev/sitemap.xml
