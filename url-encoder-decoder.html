@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online URL Encoder and Decoder | LocalKit</title>
+    <meta name="description" content="Encode text for URL use or decode percent-encoded text with this free online URL encoder and decoder.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/url-encoder-decoder.html">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #222;
+            background: #f7f7fb;
+        }
+        a { color: #5b35b5; }
+        .tool {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #00000010;
+        }
+        textarea, pre {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        textarea { min-height: 130px; }
+        button {
+            padding: 10px 15px;
+            margin: 5px 5px 5px 0;
+            border: 0;
+            border-radius: 6px;
+            background: #5b35b5;
+            color: white;
+            cursor: pointer;
+        }
+        .error { color: #b00020; }
+        .success { color: #176b35; }
+    </style>
+</head>
+<body>
+    <p><a href="/">← Back to LocalKit Home</a></p>
+
+    <h1>Free Online URL Encoder and Decoder</h1>
+    <p>Encode text for use in URL components or decode percent-encoded text into readable form.</p>
+
+    <div class="tool">
+        <label for="urlInput"><strong>Enter text or encoded text</strong></label>
+        <textarea id="urlInput" placeholder="Enter URL text here..." aria-label="URL text input"></textarea>
+
+        <button onclick="encodeURL()">Encode URL</button>
+        <button onclick="decodeURL()">Decode URL</button>
+        <button onclick="clearURL()">Clear</button>
+        <button onclick="copyURL()">Copy Output</button>
+
+        <h2>Output</h2>
+        <pre id="urlOutput" aria-live="polite"></pre>
+    </div>
+
+    <h2>What is URL encoding?</h2>
+    <p>URL encoding converts characters into a format that can safely represent data within a URL component. For example, a space becomes <code>%20</code> when encoded with JavaScript's <code>encodeURIComponent()</code> function.</p>
+
+    <h2>How to use this tool</h2>
+    <ol>
+        <li>Enter text or URL component data.</li>
+        <li>Click Encode URL to encode it, or Decode URL to decode it.</li>
+        <li>Copy the result if needed.</li>
+    </ol>
+
+    <h2>Privacy and security</h2>
+    <p>This tool processes text in your browser. URL encoding is not encryption and does not protect passwords, tokens, or confidential information.</p>
+
+    <p><a href="/">Return to all LocalKit tools</a></p>
+
+    <script>
+        function encodeURL() {
+            const input = document.getElementById("urlInput").value;
+            const output = document.getElementById("urlOutput");
+            output.textContent = encodeURIComponent(input);
+            output.className = "success";
+        }
+
+        function decodeURL() {
+            const input = document.getElementById("urlInput").value;
+            const output = document.getElementById("urlOutput");
+
+            try {
+                output.textContent = decodeURIComponent(input);
+                output.className = "success";
+            } catch {
+                output.textContent = "Invalid encoded text. Please check your input.";
+                output.className = "error";
+            }
+        }
+
+        function clearURL() {
+            document.getElementById("urlInput").value = "";
+            document.getElementById("urlOutput").textContent = "";
+            document.getElementById("urlOutput").className = "";
+        }
+
+        async function copyURL() {
+            const output = document.getElementById("urlOutput");
+            if (!output.textContent.trim()) {
+                output.textContent = "Please encode or decode something first.";
+                output.className = "error";
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(output.textContent);
+            } catch {
+                output.textContent += "\n\nCopy failed. Please select and copy the text manually.";
+            }
+        }
+    </script>
+</body>
+</html>
