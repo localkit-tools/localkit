@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online JWT Decoder | LocalKit</title>
+    <meta name="description" content="Decode JWT tokens to view their header and payload. Free browser-based JWT decoder with privacy tips. Decoding does not verify signatures.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/jwt-decoder.html">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #222;
+            background: #f7f7fb;
+        }
+        a { color: #5b35b5; }
+        .tool {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #00000010;
+        }
+        textarea, pre {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        textarea { min-height: 140px; }
+        button {
+            padding: 10px 15px;
+            margin: 5px 5px 5px 0;
+            border: 0;
+            border-radius: 6px;
+            background: #5b35b5;
+            color: white;
+            cursor: pointer;
+        }
+        .error { color: #b00020; }
+        .success { color: #176b35; }
+    </style>
+</head>
+<body>
+    <p><a href="/">← Back to LocalKit Home</a></p>
+
+    <h1>Free Online JWT Decoder</h1>
+    <p>Decode a JSON Web Token (JWT) to inspect its header and payload.</p>
+
+    <div class="tool">
+        <label for="jwtInput"><strong>JWT Token</strong></label>
+        <textarea id="jwtInput" placeholder="Paste a JWT token here..." aria-label="JWT token"></textarea>
+
+        <button onclick="decodeJWT()">Decode JWT</button>
+        <button onclick="clearJWT()">Clear</button>
+        <button onclick="copyJWT()">Copy Output</button>
+
+        <h2>Decoded Result</h2>
+        <pre id="jwtOutput" aria-live="polite"></pre>
+    </div>
+
+    <h2>What is a JWT Decoder?</h2>
+    <p>A JWT decoder displays the header and payload of a JSON Web Token in readable JSON format. JWTs are commonly used to pass claims between applications and services.</p>
+
+    <h2>How to use this tool</h2>
+    <ol>
+        <li>Paste a JWT into the input box.</li>
+        <li>Click Decode JWT.</li>
+        <li>Review the decoded header and payload.</li>
+    </ol>
+
+    <h2>Privacy and security</h2>
+    <p>This tool decodes the token in your browser. Decoding does not verify the signature or prove that a token is authentic. Never paste real passwords, private tokens, or sensitive production credentials into online tools.</p>
+
+    <p><a href="/">Return to all LocalKit tools</a></p>
+
+    <script>
+        function decodeJWT() {
+            const input = document.getElementById("jwtInput").value.trim();
+            const output = document.getElementById("jwtOutput");
+
+            try {
+                const parts = input.split(".");
+                if (parts.length !== 3 || parts.some(part => !part)) {
+                    throw new Error("Invalid JWT structure");
+                }
+
+                function decodeBase64URL(part) {
+                    if (!/^[A-Za-z0-9_-]+$/.test(part)) {
+                        throw new Error("Invalid Base64URL");
+                    }
+                    const base64 = part.replace(/-/g, "+").replace(/_/g, "/");
+                    const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+                    const binary = atob(padded);
+                    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+                    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+                }
+
+                const header = JSON.parse(decodeBase64URL(parts[0]));
+                const payload = JSON.parse(decodeBase64URL(parts[1]));
+
+                output.textContent =
+                    "HEADER:\n" + JSON.stringify(header, null, 4) +
+                    "\n\nPAYLOAD:\n" + JSON.stringify(payload, null, 4) +
+                    "\n\nWARNING: The signature has NOT been verified.";
+                output.className = "success";
+            } catch {
+                output.textContent = "Invalid JWT. Check the token format and contents.";
+                output.className = "error";
+            }
+        }
+
+        function clearJWT() {
+            document.getElementById("jwtInput").value = "";
+            document.getElementById("jwtOutput").textContent = "";
+            document.getElementById("jwtOutput").className = "";
+        }
+
+        async function copyJWT() {
+            const output = document.getElementById("jwtOutput");
+            if (!output.textContent.trim()) {
+                output.textContent = "Please decode a JWT first.";
+                output.className = "error";
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(output.textContent);
+            } catch {
+                output.textContent += "\n\nCopy failed. Please select and copy the text manually.";
+            }
+        }
+    </script>
+</body>
+</html>
