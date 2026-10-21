@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -8,5 +9,8 @@
   </url>
   <url>
     <loc>https://localkit-8vr.pages.dev/jwt-decoder.html</loc>
+  </url>
+  <url>
+    <loc>https://localkit-8vr.pages.dev/base64-encoder-decoder.html</loc>
   </url>
 </urlset>
