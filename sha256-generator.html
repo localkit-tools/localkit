@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Free SHA-256 Hash Generator | LocalKit</title>
+    <meta name="description" content="Generate a SHA-256 hash from text with this free online hash generator. Your input is processed locally in your browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/sha256-generator.html">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background: #f5f3ff;
+            color: #252044;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 30px auto;
+            padding: 28px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(50, 30, 90, 0.08);
+        }
+
+        h1 {
+            color: #6335b5;
+            line-height: 1.3;
+        }
+
+        textarea {
+            display: block;
+            width: 100%;
+            min-height: 120px;
+            margin: 10px 0;
+            padding: 12px;
+            border: 1px solid #cfc5e8;
+            border-radius: 8px;
+            font: inherit;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 8px 6px 8px 0;
+            border: none;
+            border-radius: 7px;
+            background: #6335b5;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4d278f;
+        }
+
+        #hashOutput {
+            min-height: 65px;
+            padding: 12px;
+            overflow-wrap: anywhere;
+            word-break: break-all;
+            background: #f7f5fc;
+            border-radius: 8px;
+        }
+
+        .success {
+            color: #176b3a;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .note {
+            padding: 12px;
+            background: #f0ebff;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #6335b5;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <p><a href="./">← Back to LocalKit Home</a></p>
+
+        <h1>Free SHA-256 Hash Generator</h1>
+
+        <p>
+            Convert text into a SHA-256 hash. SHA-256 is a cryptographic
+            hash function that produces a fixed-length 256-bit hash,
+            usually displayed as 64 hexadecimal characters.
+        </p>
+
+        <h2>Generate a Hash</h2>
+
+        <label for="hashInput"><strong>Enter text</strong></label>
+        <textarea
+            id="hashInput"
+            placeholder="Enter sample text here..."
+            aria-label="Text to hash"
+        ></textarea>
+
+        <button type="button" onclick="generateHash()">
+            Generate SHA-256
+        </button>
+
+        <button type="button" onclick="clearHash()">
+            Clear
+        </button>
+
+        <h3>SHA-256 Result</h3>
+        <pre id="hashOutput" aria-live="polite"></pre>
+
+        <button type="button" onclick="copyHash()">Copy Hash</button>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Enter some text in the input box.</li>
+            <li>Click Generate SHA-256.</li>
+            <li>Copy the resulting hash if needed.</li>
+        </ol>
+
+        <p>
+            <strong>Example:</strong> The SHA-256 hash of the text
+            <code>hello</code> is a 64-character hexadecimal value.
+            Even a small change in the input produces a different hash.
+        </p>
+
+        <p class="note">
+            <strong>Privacy and security:</strong> Your text is processed
+            in your browser and is not sent to a server by this tool.
+            A hash is not encryption and cannot simply be decoded to
+            recover the original text. Do not use this tool to store
+            passwords or other sensitive information.
+        </p>
+
+        <p>
+            <strong>Note:</strong> SHA-256 requires a secure browser context,
+            such as HTTPS. If it is unavailable, open this page through
+            the live HTTPS website.
+        </p>
+
+        <hr>
+        <p><a href="./">Explore more free tools on LocalKit</a></p>
+    </main>
+
+    <script>
+        async function generateHash() {
+            const input = document.getElementById("hashInput").value;
+            const output = document.getElementById("hashOutput");
+
+            if (!input) {
+                output.textContent = "Please enter some text.";
+                output.className = "error";
+                return;
+            }
+
+            if (!globalThis.crypto?.subtle) {
+                output.textContent =
+                    "SHA-256 is unavailable in this browser context.";
+                output.className = "error";
+                return;
+            }
+
+            try {
+                const data = new TextEncoder().encode(input);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+                output.textContent = Array.from(new Uint8Array(hashBuffer))
+                    .map(byte => byte.toString(16).padStart(2, "0"))
+                    .join("");
+
+                output.className = "success";
+            } catch {
+                output.textContent = "Unable to generate the SHA-256 hash.";
+                output.className = "error";
+            }
+        }
+
+        function clearHash() {
+            document.getElementById("hashInput").value = "";
+
+            const output = document.getElementById("hashOutput");
+            output.textContent = "";
+            output.className = "";
+        }
+
+        async function copyHash() {
+            const output = document.getElementById("hashOutput");
+
+            if (!output.textContent || output.classList.contains("error")) {
+                output.textContent = "Please generate a hash first.";
+                output.className = "error";
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(output.textContent);
+                output.textContent += "\nCopied to clipboard!";
+            } catch {
+                output.textContent +=
+                    "\nAutomatic copy failed. Please select and copy the hash manually.";
+            }
+        }
+    </script>
+</body>
+</html>
