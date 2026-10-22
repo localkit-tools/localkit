@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Free Image Metadata Cleaner | LocalKit</title>
+    <meta name="description" content="Create a PNG copy of an image using this free browser-based metadata cleaner. Your selected image is processed locally on your device.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/metadata-cleaner.html">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background: #f5f3ff;
+            color: #252044;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 30px auto;
+            padding: 28px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(50, 30, 90, 0.08);
+        }
+
+        h1 {
+            color: #6335b5;
+            line-height: 1.3;
+        }
+
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            margin: 12px 0;
+            padding: 12px;
+            border: 1px solid #cfc5e8;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 8px 6px 8px 0;
+            border: none;
+            border-radius: 7px;
+            background: #6335b5;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4d278f;
+        }
+
+        #metadataOutput {
+            min-height: 40px;
+            margin-top: 16px;
+            padding: 12px;
+            overflow-wrap: anywhere;
+            background: #f7f5fc;
+            border-radius: 8px;
+        }
+
+        #metadataOutput a {
+            color: #6335b5;
+            font-weight: bold;
+        }
+
+        .note {
+            padding: 12px;
+            background: #f0ebff;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #6335b5;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <p><a href="./">← Back to LocalKit Home</a></p>
+
+        <h1>Free Image Metadata Cleaner</h1>
+
+        <p>
+            Create a new PNG copy of an image by drawing it onto a
+            browser canvas. This can remove many types of embedded
+            metadata from the newly created image.
+        </p>
+
+        <h2>Clean Image Metadata</h2>
+
+        <label for="imageInput"><strong>Select an image</strong></label>
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            aria-label="Select an image to clean"
+        >
+
+        <p>Maximum file size: 15 MB. Images with more than 40 million pixels are not processed.</p>
+
+        <button type="button" onclick="cleanImageMetadata()">
+            Clean Image
+        </button>
+
+        <button type="button" onclick="clearMetadata()">
+            Clear
+        </button>
+
+        <div id="metadataOutput" aria-live="polite"></div>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Select an image file from your device.</li>
+            <li>Click Clean Image.</li>
+            <li>Wait for processing to finish.</li>
+            <li>Click Download Cleaned Image to save the new PNG.</li>
+        </ol>
+
+        <p class="note">
+            <strong>Privacy:</strong> The image is processed in your
+            browser; this tool does not upload it to a server.
+            For sensitive images, use a trusted device and keep the
+            original file if you need it.
+        </p>
+
+        <p>
+            <strong>Important:</strong> The result is a PNG copy, so
+            the file format and file size may change. Canvas conversion
+            can remove many embedded metadata fields, but this tool
+            does not guarantee removal of every possible metadata type
+            or hidden information. Check the downloaded file if you
+            require verified metadata removal.
+        </p>
+
+        <hr>
+        <p><a href="./">Explore more free tools on LocalKit</a></p>
+    </main>
+
+    <script>
+        let cleanedImageURL = null;
+        let imageProcessingToken = 0;
+
+        function clearMetadata() {
+            imageProcessingToken++;
+
+            const fileInput = document.getElementById("imageInput");
+            if (fileInput) fileInput.value = "";
+
+            const output = document.getElementById("metadataOutput");
+            if (output) output.replaceChildren();
+
+            if (cleanedImageURL) {
+                URL.revokeObjectURL(cleanedImageURL);
+                cleanedImageURL = null;
+            }
+        }
+
+        async function cleanImageMetadata() {
+            const fileInput = document.getElementById("imageInput");
+            const output = document.getElementById("metadataOutput");
+
+            if (!fileInput || !output) return;
+
+            const file = fileInput.files?.[0];
+
+            if (!file) {
+                output.textContent = "Please select an image first.";
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                output.textContent = "Please select an image file.";
+                return;
+            }
+
+            if (file.size > 15 * 1024 * 1024) {
+                output.textContent = "Please choose an image smaller than 15 MB.";
+                return;
+            }
+
+            const token = ++imageProcessingToken;
+            output.textContent = "Processing image...";
+
+            const sourceURL = URL.createObjectURL(file);
+
+            try {
+                const image = new Image();
+
+                await new Promise((resolve, reject) => {
+                    image.onload = resolve;
+                    image.onerror = () => reject(
+                        new Error("Image could not be read.")
+                    );
+                    image.src = sourceURL;
+                });
+
+                if (token !== imageProcessingToken) return;
+
+                if (
+                    !image.naturalWidth ||
+                    !image.naturalHeight ||
+                    image.naturalWidth * image.naturalHeight > 40000000
+                ) {
+                    throw new Error(
+                        "Image dimensions are too large to process safely."
+                    );
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+
+                const context = canvas.getContext("2d");
+                if (!context) {
+                    throw new Error("Canvas processing is unavailable.");
+                }
+
+                context.drawImage(image, 0, 0);
+
+                const blob = await new Promise(resolve =>
+                    canvas.toBlob(resolve, "image/png")
+                );
+
+                if (token !== imageProcessingToken) return;
+
+                if (!blob) {
+                    throw new Error("The cleaned image could not be created.");
+                }
+
+                if (cleanedImageURL) {
+                    URL.revokeObjectURL(cleanedImageURL);
+                }
+
+                cleanedImageURL = URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = cleanedImageURL;
+                link.download = "cleaned-image.png";
+                link.textContent = "Download Cleaned Image";
+
+                output.replaceChildren(link);
+                fileInput.value = "";
+            } catch (error) {
+                if (token === imageProcessingToken) {
+                    output.textContent = error.message ||
+                        "Unable to process this image. Try another file.";
+                }
+            } finally {
+                URL.revokeObjectURL(sourceURL);
+            }
+        }
+    </script>
+</body>
+</html>
