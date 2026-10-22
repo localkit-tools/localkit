@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Free Unix Timestamp Converter | LocalKit</title>
+    <meta name="description" content="Convert Unix timestamps in seconds into readable local date and time. Free online timestamp converter that processes your input in your browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/timestamp-converter.html">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+            font-family: Arial, sans-serif;
+            background: #f5f3ff;
+            color: #252044;
+            line-height: 1.6;
+        }
+
+        main {
+            max-width: 720px;
+            margin: 30px auto;
+            padding: 28px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(50, 30, 90, 0.08);
+        }
+
+        h1 {
+            color: #6335b5;
+            line-height: 1.3;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #cfc5e8;
+            border-radius: 8px;
+            font: inherit;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px 5px 5px 0;
+            border: none;
+            border-radius: 7px;
+            background: #6335b5;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4d278f;
+        }
+
+        #timestampOutput {
+            min-height: 48px;
+            padding: 12px;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+            background: #f7f5fc;
+            border-radius: 8px;
+        }
+
+        .success {
+            color: #176b3a;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .note {
+            padding: 12px;
+            background: #f0ebff;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #6335b5;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 16px;
+            }
+
+            button {
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <p><a href="./">← Back to LocalKit Home</a></p>
+
+        <h1>Free Unix Timestamp Converter</h1>
+
+        <p>
+            Convert a Unix timestamp in seconds into a readable local date
+            and time. Unix timestamps count the seconds elapsed since
+            January 1, 1970, at 00:00:00 UTC.
+        </p>
+
+        <h2>Convert Timestamp</h2>
+
+        <label for="timestampInput">
+            <strong>Unix timestamp (seconds)</strong>
+        </label>
+
+        <textarea
+            id="timestampInput"
+            placeholder="Example: 1700000000"
+            aria-label="Unix timestamp in seconds"
+        ></textarea>
+
+        <button type="button" onclick="convertTimestamp()">
+            Convert Timestamp
+        </button>
+
+        <button type="button" onclick="clearTimestamp()">
+            Clear
+        </button>
+
+        <h3>Converted Date and Time</h3>
+
+        <pre id="timestampOutput" aria-live="polite"></pre>
+
+        <button type="button" onclick="copyTimestamp()">
+            Copy Result
+        </button>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Enter a Unix timestamp in seconds.</li>
+            <li>Click Convert Timestamp.</li>
+            <li>Read the resulting date and time in your browser's local time zone.</li>
+            <li>Use Copy Result to copy the converted result.</li>
+        </ol>
+
+        <p><strong>Example:</strong> Enter <code>1700000000</code> to see its corresponding date and time.</p>
+
+        <p class="note">
+            <strong>Privacy:</strong> Conversion happens directly in your
+            browser. Your timestamp is not sent to a server by this tool.
+        </p>
+
+        <p>
+            <strong>Note:</strong> This tool accepts timestamps in seconds,
+            not milliseconds. The displayed date and time use your browser's
+            local time zone.
+        </p>
+
+        <hr>
+
+        <p><a href="./">Explore more free tools on LocalKit</a></p>
+    </main>
+
+    <script>
+        function convertTimestamp() {
+            const input = document.getElementById("timestampInput").value.trim();
+            const output = document.getElementById("timestampOutput");
+
+            if (!input) {
+                output.textContent = "Please enter a Unix timestamp in seconds.";
+                output.className = "error";
+                return;
+            }
+
+            const seconds = Number(input);
+            const date = new Date(seconds * 1000);
+
+            if (!Number.isFinite(seconds) || !Number.isFinite(date.getTime())) {
+                output.textContent = "Please enter a valid timestamp within the supported date range.";
+                output.className = "error";
+                return;
+            }
+
+            output.textContent = date.toLocaleString();
+            output.className = "success";
+        }
+
+        function clearTimestamp() {
+            document.getElementById("timestampInput").value = "";
+            const output = document.getElementById("timestampOutput");
+            output.textContent = "";
+            output.className = "";
+        }
+
+        async function copyTimestamp() {
+            const output = document.getElementById("timestampOutput");
+
+            if (!output.textContent || output.classList.contains("error")) {
+                output.textContent = "Please convert a timestamp first.";
+                output.className = "error";
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(output.textContent);
+                output.textContent += "\nCopied to clipboard!";
+            } catch {
+                output.textContent += "\nAutomatic copy failed. Please select and copy the result manually.";
+            }
+        }
+    </script>
+</body>
+</html>
