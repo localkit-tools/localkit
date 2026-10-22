@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Free Online Regex Tester | LocalKit</title>
+    <meta name="description" content="Test regular expressions online with this free regex tester. Find matching text directly in your browser without sending your input to a server.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://localkit-8vr.pages.dev/regex-tester.html">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px 16px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background: #f5f3ff;
+            color: #252044;
+        }
+
+        main {
+            max-width: 760px;
+            margin: 30px auto;
+            padding: 28px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(50, 30, 90, 0.08);
+        }
+
+        h1 {
+            color: #6335b5;
+            line-height: 1.3;
+        }
+
+        label {
+            display: block;
+            margin-top: 16px;
+        }
+
+        input,
+        textarea {
+            display: block;
+            width: 100%;
+            margin-top: 6px;
+            padding: 12px;
+            border: 1px solid #cfc5e8;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 12px 6px 8px 0;
+            border: none;
+            border-radius: 7px;
+            background: #6335b5;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4d278f;
+        }
+
+        #regexOutput {
+            min-height: 60px;
+            padding: 12px;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+            background: #f7f5fc;
+            border-radius: 8px;
+        }
+
+        .success {
+            color: #176b3a;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .note {
+            padding: 12px;
+            background: #f0ebff;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #6335b5;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <p><a href="./">← Back to LocalKit Home</a></p>
+
+        <h1>Free Online Regex Tester</h1>
+
+        <p>
+            Test a regular expression (regex) against sample text.
+            A regular expression is a pattern used to search for,
+            match, and validate text.
+        </p>
+
+        <h2>Test Your Regular Expression</h2>
+
+        <label for="regexInput"><strong>Regular expression pattern</strong></label>
+        <input
+            type="text"
+            id="regexInput"
+            placeholder="Example: [A-Za-z]+"
+            aria-label="Regular expression pattern"
+        >
+
+        <label for="regexText"><strong>Text to test</strong></label>
+        <textarea
+            id="regexText"
+            placeholder="Enter sample text here..."
+            aria-label="Text to test"
+        ></textarea>
+
+        <button type="button" onclick="testRegex()">Test Regex</button>
+        <button type="button" onclick="clearRegex()">Clear</button>
+
+        <h3>Results</h3>
+        <pre id="regexOutput" aria-live="polite"></pre>
+
+        <button type="button" onclick="copyRegex()">Copy Results</button>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li>Enter a regular expression pattern.</li>
+            <li>Enter the sample text you want to check.</li>
+            <li>Click Test Regex to display matching text.</li>
+            <li>Use Clear to reset both fields.</li>
+        </ol>
+
+        <p><strong>Example:</strong> Pattern <code>[A-Za-z]+</code> matches sequences of English letters. For text <code>Hello 123 World</code>, the matches are <code>Hello</code> and <code>World</code>.</p>
+
+        <p class="note">
+            <strong>Privacy and safety:</strong> Testing happens in your
+            browser. This tool limits the pattern to 200 characters and
+            the input text to 20,000 characters. Some complex regular
+            expressions can still run slowly, so use simple patterns
+            and sample text you trust.
+        </p>
+
+        <hr>
+        <p><a href="./">Explore more free tools on LocalKit</a></p>
+    </main>
+
+    <script>
+        function testRegex() {
+            const pattern = document.getElementById("regexInput").value;
+            const text = document.getElementById("regexText").value;
+            const output = document.getElementById("regexOutput");
+
+            if (!pattern) {
+                output.textContent = "Please enter a regular expression.";
+                output.className = "error";
+                return;
+            }
+
+            if (pattern.length > 200 || text.length > 20000) {
+                output.textContent = "Please use a pattern under 201 characters and text under 20,001 characters.";
+                output.className = "error";
+                return;
+            }
+
+            try {
+                const regex = new RegExp(pattern, "g");
+                const matches = text.match(regex);
+
+                if (matches && matches.length) {
+                    output.textContent = "Matches found:\n" + matches.join("\n");
+                    output.className = "success";
+                } else {
+                    output.textContent = "No matches found.";
+                    output.className = "error";
+                }
+            } catch {
+                output.textContent = "Invalid regular expression. Please check your pattern.";
+                output.className = "error";
+            }
+        }
+
+        function clearRegex() {
+            document.getElementById("regexInput").value = "";
+            document.getElementById("regexText").value = "";
+
+            const output = document.getElementById("regexOutput");
+            output.textContent = "";
+            output.className = "";
+        }
+
+        async function copyRegex() {
+            const output = document.getElementById("regexOutput");
+
+            if (
+                !output.textContent ||
+                output.classList.contains("error")
+            ) {
+                output.textContent = "Please test a regular expression first.";
+                output.className = "error";
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(output.textContent);
+                output.textContent += "\nCopied to clipboard!";
+            } catch {
+                output.textContent += "\nAutomatic copy failed. Please select and copy the results manually.";
+            }
+        }
+    </script>
+</body>
+</html>
